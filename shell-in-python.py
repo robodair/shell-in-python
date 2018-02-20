@@ -3,6 +3,7 @@
 import os
 import sys
 import shlex
+import subprocess
 
 
 class Builtin(object):
@@ -66,6 +67,17 @@ class BuiltinExport(Builtin):
             print("'" + cmd[1] + "'", "is an invalid assignment")
 
 
+class ExternalCommand(object):
+    def execute(self, command):
+        # python subprocess can do the heavy lifting here
+        # this won't do pipes though, as the pipes will just be arguments
+        # TODO: Implement piping
+        try:
+            subprocess.call(command)
+        except FileNotFoundError:
+            print("Not Found:", command[0])
+
+
 class InteractiveREPL(object):
 
     builtin_commands = [BuiltinExit, BuiltinEnv, BuiltinExport, BuiltinList, BuiltinChdir]
@@ -85,8 +97,7 @@ class InteractiveREPL(object):
                         break
 
                 if not is_builtin:
-                    print("Would run non-builtin command:", command)
-
+                    ExternalCommand().execute(command)
 
             else:
                 print("Enter something!")
