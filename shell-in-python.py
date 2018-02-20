@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
+import os
 def main():
     while True:
-        command = input("> ")
+        prompt = os.getcwd() + " > "
+        command = input(prompt)
         print(command)
 
 if __name__ == "__main__":
