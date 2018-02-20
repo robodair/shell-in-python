@@ -9,7 +9,7 @@ class Builtin(object):
     this_cmd = None
     @classmethod
     def is_command(cls, cmd):
-        if cmd[0] == cls.this_cmd:
+        if cmd == cls.this_cmd:
             return True
         return False
 
@@ -19,6 +19,33 @@ class BuiltinExit(Builtin):
     def execute(self, cmd):
         # TODO: Check if there's the right number of args or not
         sys.exit(0)
+
+
+class BuiltinList(Builtin):
+    this_cmd = "ls"
+    def execute(self, cmd):
+        dirs = cmd [1:]
+        if not dirs:
+            dirs = ["."]
+        for d in dirs:
+            try:
+                contents = os.listdir(d)
+                print(d)
+                print(contents)
+            except FileNotFoundError:
+                print(d, "Not Found")
+                continue
+
+
+class BuiltinChdir(Builtin):
+    this_cmd = "cd"
+    def execute(self, cmd):
+        #TODO: only accept one argument
+        try:
+            d = cmd[1]
+        except IndexError:
+            d = "."
+        os.chdir(d)
 
 
 class BuiltinEnv(Builtin):
@@ -41,7 +68,7 @@ class BuiltinExport(Builtin):
 
 class InteractiveREPL(object):
 
-    builtin_commands = [BuiltinExit, BuiltinEnv, BuiltinExport]
+    builtin_commands = [BuiltinExit, BuiltinEnv, BuiltinExport, BuiltinList, BuiltinChdir]
 
     def run(self):
         while True:
@@ -52,7 +79,7 @@ class InteractiveREPL(object):
             if command:
                 is_builtin = False
                 for builtin in self.builtin_commands:
-                    if builtin.is_command(command):
+                    if builtin.is_command(command[0]):
                         is_builtin = True
                         builtin().execute(command)
                         break
