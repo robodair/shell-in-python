@@ -27,9 +27,13 @@ class InteractiveREPL(object):
             prompt = os.getcwd() + " > "
             command = input(prompt)
 
-            for builtin in self.builtin_commands:
-                if builtin.is_command(command):
-                    builtin().execute(command)
+            if command:
+                for builtin in self.builtin_commands:
+                    if builtin.is_command(command):
+                        builtin().execute(command)
+            else:
+                # nothing, empty line
+                continue
 
             print(command)
 
