@@ -2,13 +2,14 @@
 
 import os
 import sys
+import shlex
 
 
 class Builtin(object):
     this_cmd = None
     @classmethod
     def is_command(cls, cmd):
-        if cmd == cls.this_cmd:
+        if cmd[0] == cls.this_cmd:
             return True
         return False
 
@@ -30,7 +31,12 @@ class BuiltinEnv(Builtin):
 class BuiltinExport(Builtin):
     this_cmd = "export"
     def execute(self, cmd):
-        print("export command")
+        #TODO: extra validation on the arguments, including checking length
+        try:
+            var, val = cmd[1].split("=")
+            os.environ[var] = val
+        except ValueError:
+            print("'" + cmd[1] + "'", "is an invalid assignment")
 
 
 class InteractiveREPL(object):
@@ -41,16 +47,23 @@ class InteractiveREPL(object):
         while True:
             prompt = os.getcwd() + " > "
             command = input(prompt)
+            command = shlex.split(command)
 
             if command:
+                is_builtin = False
                 for builtin in self.builtin_commands:
                     if builtin.is_command(command):
+                        is_builtin = True
                         builtin().execute(command)
-            else:
-                # nothing, empty line
-                continue
+                        break
 
-            print(command)
+                if not is_builtin:
+                    print("Would run non-builtin command:", command)
+
+
+            else:
+                print("Enter something!")
+                continue
 
 
 if __name__ == "__main__":
