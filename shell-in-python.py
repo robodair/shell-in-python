@@ -69,13 +69,33 @@ class BuiltinExport(Builtin):
 
 class ExternalCommand(object):
     def execute(self, command):
-        # python subprocess can do the heavy lifting here
-        # this won't do pipes though, as the pipes will just be arguments
-        # TODO: Implement piping
-        try:
-            subprocess.call(command)
-        except FileNotFoundError:
-            print("Not Found:", command[0])
+        # python subprocess can do the heavy lifting here, we just worry about pipes
+        processes = []
+        current_process = []
+
+        for segment in command:
+            if segment == "|":
+                processes.append(current_process)
+                current_process = []
+            else:
+                current_process.append(segment)
+        processes.append(current_process) # catch the last process not ending with "|"
+
+        prev_process = None
+        stdin = sys.stdin
+        for index, process in enumerate(processes):
+            stdout = subprocess.PIPE
+
+            last_process = index + 1 == len(processes)
+
+            if last_process:
+                stdout = sys.stdout
+
+            prev_process = subprocess.Popen(process, stdout=stdout, stdin=stdin)
+            stdin = prev_process.stdout
+
+            if last_process:
+                prev_process.wait()
 
 
 class InteractiveREPL(object):
