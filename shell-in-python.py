@@ -3,24 +3,39 @@
 import os
 import sys
 
-class BuiltinExit(object):
 
-    this_cmd = "exit"
-
+class Builtin(object):
+    this_cmd = None
     @classmethod
     def is_command(cls, cmd):
         if cmd == cls.this_cmd:
             return True
         return False
 
+
+class BuiltinExit(Builtin):
+    this_cmd = "exit"
     def execute(self, cmd):
         # TODO: Check if there's the right number of args or not
         sys.exit(0)
 
 
+class BuiltinEnv(Builtin):
+    this_cmd = "env"
+    def execute(self, cmd):
+        for var, val in os.environ.items():
+            print(var + "=" + val)
+
+
+class BuiltinExport(Builtin):
+    this_cmd = "export"
+    def execute(self, cmd):
+        print("export command")
+
+
 class InteractiveREPL(object):
 
-    builtin_commands = [BuiltinExit]
+    builtin_commands = [BuiltinExit, BuiltinEnv, BuiltinExport]
 
     def run(self):
         while True:
